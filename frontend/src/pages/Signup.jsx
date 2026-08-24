@@ -1,0 +1,118 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../services/api";
+
+function Signup() {
+    const [form, setForm] = useState({
+        username: "",
+        email: "",
+        mobile: "",
+        password: ""
+    });
+
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    const navigate = useNavigate();
+
+    const handleChange = (e) => {
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+        setSuccess("");
+
+        if (!form.username || !form.email || !form.mobile || !form.password) {
+            setError("All fields are required");
+            return;
+        }
+
+        if (!/^\d{10}$/.test(form.mobile)) {
+            setError("Mobile number must contain exactly 10 digits");
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            await api.post("/auth/signup", form);
+
+            setSuccess("Account created successfully!");
+
+            setTimeout(() => {
+                navigate("/login");
+            }, 800);
+
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                "Signup failed"
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="auth-container">
+            <div className="auth-card">
+                <h1>Book Review System</h1>
+                <h2>Create Account</h2>
+
+                <form onSubmit={handleSubmit}>
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Username"
+                        value={form.username}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="Email"
+                        value={form.email}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        type="text"
+                        name="mobile"
+                        placeholder="10-digit mobile number"
+                        value={form.mobile}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={form.password}
+                        onChange={handleChange}
+                    />
+
+                    {error && <p className="error">{error}</p>}
+                    {success && <p className="success">{success}</p>}
+
+                    <button type="submit" disabled={loading}>
+                        {loading ? "Creating..." : "Sign Up"}
+                    </button>
+                </form>
+
+                <p>
+                    Already have an account?{" "}
+                    <Link to="/login">Login</Link>
+                </p>
+            </div>
+        </div>
+    );
+}
+
+export default Signup;
