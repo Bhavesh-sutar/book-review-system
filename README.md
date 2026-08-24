@@ -60,8 +60,7 @@ book-review-system/
 │   └── Book Review System API.postman_collection.json
 │
 ├── .gitignore
-├── README.md
-└── .env.example
+└── Readme.md
 ```
 
 ## Requirements
