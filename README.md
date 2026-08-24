@@ -1,4 +1,3 @@
-````markdown
 # Book Review System
 
 A full-stack Book Review System built as a take-home assignment using React.js, Node.js, Express.js, MongoDB, and Mongoose.
@@ -64,7 +63,6 @@ book-review-system/
 ├── README.md
 └── .env.example
 ```
-````
 
 ## Requirements
 
@@ -74,10 +72,10 @@ book-review-system/
 
 ## Setup
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
-git clone <your-github-repository-url>
+git clone https://github.com/Bhavesh-sutar/book-review-system
 cd book-review-system
 ```
 
@@ -150,7 +148,7 @@ PUT    /reviews/:reviewId
 DELETE /reviews/:reviewId
 ```
 
-Protected endpoints use:
+Protected endpoints require:
 
 ```text
 Authorization: Bearer <JWT>
@@ -203,7 +201,3 @@ All generated code was reviewed, integrated, and tested locally as part of the d
 - Protected routes require authentication
 - `.env` is excluded from Git
 - Sensitive credentials are not committed to the repository
-
-```
-
-```
