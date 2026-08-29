@@ -20,6 +20,12 @@ function Dashboard() {
 
     const navigate = useNavigate();
 
+    const token = localStorage.getItem("token");
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+
+    const isLoggedIn = !!token;
+    const isAdmin = currentUser?.role === "admin";
+
     const loadBooks = async () => {
         try {
             setLoading(true);
@@ -52,7 +58,6 @@ function Dashboard() {
                 setBooks(response.data.books);
                 setPagination(response.data.pagination);
             }
-
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -73,6 +78,13 @@ function Dashboard() {
         loadBooks();
     };
 
+    const clearFilters = () => {
+        setSearch("");
+        setAuthor("");
+        setGenre("");
+        setPage(1);
+    };
+
     const logout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -83,22 +95,60 @@ function Dashboard() {
         <div className="dashboard">
 
             <header className="navbar">
-                <h1>Book Review System</h1>
 
                 <div>
-                    <button onClick={() => navigate("/add-book")}>
-                        + Add Book
-                    </button>
-
-                    <button onClick={logout}>
-                        Logout
-                    </button>
+                    <h1>📚 Book Review System</h1>
+                    <p>Discover, review and share great books.</p>
                 </div>
+
+                <div className="navbar-actions">
+
+                    {!isLoggedIn && (
+                        <>
+                            <button onClick={() => navigate("/login")}>
+                                Login
+                            </button>
+
+                            <button onClick={() => navigate("/signup")}>
+                                Sign Up
+                            </button>
+                        </>
+                    )}
+
+                    {isLoggedIn && !isAdmin && (
+                        <button onClick={() => navigate("/add-book")}>
+                            + Add Book
+                        </button>
+                    )}
+
+                    {isAdmin && (
+                        <button onClick={() => navigate("/admin")}>
+                            Admin Panel
+                        </button>
+                    )}
+
+                    {isLoggedIn && (
+                        <button onClick={logout}>
+                            Logout
+                        </button>
+                    )}
+
+                </div>
+
             </header>
 
             <main className="dashboard-content">
 
-                <div className="search-section">
+                <section className="hero-section">
+                    <h2>Find Your Next Great Read</h2>
+                    <p>
+                        Explore books, discover new authors and read what
+                        other readers think.
+                    </p>
+                </section>
+
+                <section className="search-section">
+
                     <form onSubmit={handleSearch}>
                         <input
                             type="text"
@@ -108,7 +158,7 @@ function Dashboard() {
                         />
 
                         <button type="submit">
-                            Search
+                            🔍 Search
                         </button>
                     </form>
 
@@ -134,19 +184,13 @@ function Dashboard() {
                             }}
                         />
 
-                        <button
-                            onClick={() => {
-                                setSearch("");
-                                setAuthor("");
-                                setGenre("");
-                                setPage(1);
-                            }}
-                        >
+                        <button onClick={clearFilters}>
                             Clear
                         </button>
 
                     </div>
-                </div>
+
+                </section>
 
                 {loading && (
                     <p className="status">Loading books...</p>
@@ -168,23 +212,33 @@ function Dashboard() {
                         <div
                             className="book-card"
                             key={book._id}
-                            onClick={() => navigate(`/books/${book._id}`)}
                         >
-                            <h2>{book.title}</h2>
+                            <div
+                                onClick={() =>
+                                    navigate(`/books/${book._id}`)
+                                }
+                            >
+                                <span className="book-genre">
+                                    {book.genre}
+                                </span>
 
-                            <p>
-                                <strong>Author:</strong> {book.author}
-                            </p>
+                                <h2>{book.title}</h2>
 
-                            <p>
-                                <strong>Genre:</strong> {book.genre}
-                            </p>
+                                <p>
+                                    <strong>Author:</strong>{" "}
+                                    {book.author}
+                                </p>
 
-                            <p className="rating">
-                                ⭐ {book.averageRating}
-                            </p>
+                                <p className="rating">
+                                    ⭐ {book.averageRating || 0}
+                                </p>
+                            </div>
 
-                            <button>
+                            <button
+                                onClick={() =>
+                                    navigate(`/books/${book._id}`)
+                                }
+                            >
                                 View Details
                             </button>
                         </div>
@@ -199,7 +253,7 @@ function Dashboard() {
                             disabled={page === 1}
                             onClick={() => setPage(page - 1)}
                         >
-                            Previous
+                            ← Previous
                         </button>
 
                         <span>
@@ -208,16 +262,19 @@ function Dashboard() {
                         </span>
 
                         <button
-                            disabled={page === pagination.totalPages}
+                            disabled={
+                                page === pagination.totalPages
+                            }
                             onClick={() => setPage(page + 1)}
                         >
-                            Next
+                            Next →
                         </button>
 
                     </div>
                 )}
 
             </main>
+
         </div>
     );
 }

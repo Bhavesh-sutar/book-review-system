@@ -5,6 +5,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const bookRoutes = require("./routes/bookRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/books", bookRoutes);
 app.use("/", reviewRoutes);
+app.use("/admin", adminRoutes);
 
 app.get("/", (req, res) => {
     res.json({

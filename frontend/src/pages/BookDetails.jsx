@@ -166,7 +166,7 @@ function BookDetails() {
                     <strong>Genre:</strong> {book.genre}
                 </p>
 
-                <h2>⭐ {book.averageRating}</h2>
+                <h2>⭐ {book.averageRating || 0}</h2>
             </section>
 
             <section className="review-section">
@@ -220,86 +220,102 @@ function BookDetails() {
 
             </section>
 
-            <section className="add-review">
+            {currentUser ? (
+                <section className="add-review">
 
-                <h2>
-                    {editingReview
-                        ? "Edit Your Review"
-                        : "Write a Review"}
-                </h2>
+                    <h2>
+                        {editingReview
+                            ? "Edit Your Review"
+                            : "Write a Review"}
+                    </h2>
 
-                <form
-                    onSubmit={
-                        editingReview
-                            ? updateReview
-                            : submitReview
-                    }
-                >
-
-                    <select
-                        value={rating}
-                        onChange={(e) =>
-                            setRating(Number(e.target.value))
+                    <form
+                        onSubmit={
+                            editingReview
+                                ? updateReview
+                                : submitReview
                         }
                     >
-                        <option value={5}>
-                            5 - Excellent
-                        </option>
 
-                        <option value={4}>
-                            4 - Very Good
-                        </option>
+                        <select
+                            value={rating}
+                            onChange={(e) =>
+                                setRating(Number(e.target.value))
+                            }
+                        >
+                            <option value={5}>
+                                5 - Excellent
+                            </option>
 
-                        <option value={3}>
-                            3 - Good
-                        </option>
+                            <option value={4}>
+                                4 - Very Good
+                            </option>
 
-                        <option value={2}>
-                            2 - Fair
-                        </option>
+                            <option value={3}>
+                                3 - Good
+                            </option>
 
-                        <option value={1}>
-                            1 - Poor
-                        </option>
-                    </select>
+                            <option value={2}>
+                                2 - Fair
+                            </option>
 
-                    <textarea
-                        placeholder="Write your review..."
-                        value={comment}
-                        onChange={(e) =>
-                            setComment(e.target.value)
-                        }
-                    />
+                            <option value={1}>
+                                1 - Poor
+                            </option>
+                        </select>
 
-                    {reviewError && (
-                        <p className="error">
-                            {reviewError}
-                        </p>
-                    )}
+                        <textarea
+                            placeholder="Write your review..."
+                            value={comment}
+                            onChange={(e) =>
+                                setComment(e.target.value)
+                            }
+                        />
 
-                    <button
-                        type="submit"
-                        disabled={reviewLoading}
-                    >
-                        {reviewLoading
-                            ? "Saving..."
-                            : editingReview
-                                ? "Update Review"
-                                : "Submit Review"}
+                        {reviewError && (
+                            <p className="error">
+                                {reviewError}
+                            </p>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={reviewLoading}
+                        >
+                            {reviewLoading
+                                ? "Saving..."
+                                : editingReview
+                                    ? "Update Review"
+                                    : "Submit Review"}
+                        </button>
+
+                        {editingReview && (
+                            <button
+                                type="button"
+                                onClick={cancelEditing}
+                            >
+                                Cancel
+                            </button>
+                        )}
+
+                    </form>
+
+                </section>
+            ) : (
+                <section className="login-prompt">
+
+                    <h3>Want to share your thoughts?</h3>
+
+                    <p>
+                        Login or create an account to write a review.
+                    </p>
+
+                    <button onClick={() => navigate("/login")}>
+                        Login to Review
                     </button>
 
-                    {editingReview && (
-                        <button
-                            type="button"
-                            onClick={cancelEditing}
-                        >
-                            Cancel
-                        </button>
-                    )}
-
-                </form>
-
-            </section>
+                </section>
+            )}
 
         </div>
     );

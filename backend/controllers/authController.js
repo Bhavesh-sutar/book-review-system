@@ -1,16 +1,43 @@
-const bcrypt = require("bcryptjs");
-const User = require("../models/User");
-const jwt = require("jsonwebtoken"); 
+const bcrypt = require("bcryptjs"); // importing bcrypt for password hashing
+const User = require("../models/User"); //importing user schema/model for mongoose
+const jwt = require("jsonwebtoken"); //importing jwt
+
+
+//Signup API
 
 const signup = async (req, res) => {
     try {
-        const { username, email, mobile, password } = req.body;
+        const { username, email, mobile, password, pin } = req.body;
 
         // Check required fields
-        if (!username || !email || !mobile || !password) {
+        if (!username || !email || !mobile || !password || !pin)  {
             return res.status(400).json({
                 message: "All fields are required"
             });
+        }
+
+        //Email Validation
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+            //setError("Invalid email");
+            return res.status(400).json({
+              message: "Email dalna sikh ke aa"
+            });
+        }
+
+        //Mobile Number Validation
+        if (!/^\d{10}$/.test(mobile)) {
+          //setError("Invalid Mobile Number");
+          return res.status(400).json({
+              message: "Ladki h kya galat number deta h"
+          });
+        }
+
+        //Pincode Validation
+        if (!/^\d{6}$/.test(pin)) {
+          //setError("Invalid Pincode");
+          return res.status(400).json({
+              message: "Invalid Pincode"
+          })
         }
 
         // Check if user already exists
@@ -22,6 +49,7 @@ const signup = async (req, res) => {
             ]
         });
 
+        // If existing user, return 409 - conflict 
         if (existingUser) {
             return res.status(409).json({
                 message: "Username, email, or mobile already exists"
@@ -36,7 +64,8 @@ const signup = async (req, res) => {
             username,
             email,
             mobile,
-            password: hashedPassword
+            password: hashedPassword,
+            pin
         });
 
         res.status(201).json({
@@ -45,7 +74,8 @@ const signup = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                mobile: user.mobile
+                mobile: user.mobile,
+                //pin: user.pin
             }
         });
 
@@ -68,19 +98,23 @@ const login = async (req, res) => {
             });
         }
 
+        //finding user
         const user = await User.findOne({ email });
 
+        //If user don't exist or email don't exists return
         if (!user) {
             return res.status(401).json({
                 message: "Invalid email or password"
             });
         }
 
+        //Checking password Valid or Not of the user
         const isPasswordValid = await bcrypt.compare(
             password,
             user.password
         );
 
+        //If Not Valid password
         if (!isPasswordValid) {
             return res.status(401).json({
                 message: "Invalid email or password"
@@ -88,7 +122,10 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { userId: user._id },
+            { 
+              userId: user._id,
+              role: user.role
+             },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
         );
@@ -99,7 +136,8 @@ const login = async (req, res) => {
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
 

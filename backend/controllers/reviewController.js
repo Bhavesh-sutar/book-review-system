@@ -45,7 +45,7 @@ const createReview = async (req, res) => {
         }
 
         const existingReview = await Review.findOne({
-            user: req.user,
+            user: req.user.id,
             book: bookId
         });
 
@@ -56,7 +56,7 @@ const createReview = async (req, res) => {
         }
 
         const review = await Review.create({
-            user: req.user,
+            user: req.user.id,
             book: bookId,
             rating,
             comment
@@ -106,7 +106,7 @@ const updateReview = async (req, res) => {
             });
         }
 
-        if (review.user.toString() !== req.user.toString()) {
+        if (review.user.toString() !== req.user.id.toString()) {
             return res.status(403).json({
                 message: "You can only update your own review"
             });
@@ -148,7 +148,7 @@ const deleteReview = async (req, res) => {
             });
         }
 
-        if (review.user.toString() !== req.user.toString()) {
+        if (review.user.toString() !== req.user.id.toString()) {
             return res.status(403).json({
                 message: "You can only delete your own review"
             });

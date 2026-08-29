@@ -1,4 +1,5 @@
 const Book = require("../models/Book");
+const Review = require("../models/Review");
 
 const getBooks = async (req, res) => {
     try {
@@ -52,6 +53,7 @@ const getBooks = async (req, res) => {
     }
 };
 
+
 const createBook = async (req, res) => {
     try {
         const { title, author, genre } = req.body;
@@ -66,7 +68,8 @@ const createBook = async (req, res) => {
             title,
             author,
             genre,
-            averageRating: 0
+            averageRating: 0,
+            createdBy: req.user.id
         });
 
         res.status(201).json({
@@ -94,8 +97,6 @@ const getBookById = async (req, res) => {
             });
         }
 
-        const Review = require("../models/Review");
-
         const reviews = await Review.find({ book: book._id })
             .populate("user", "username")
             .sort({ createdAt: -1 });
@@ -119,7 +120,6 @@ const getBookById = async (req, res) => {
         });
     }
 };
-
 
 
 const searchBooks = async (req, res) => {
@@ -162,10 +162,109 @@ const searchBooks = async (req, res) => {
     }
 };
 
-module.exports = {
-    getBooks,
-    createBook,
-    getBookById,
-    searchBooks
+
+const updateBook = async (req, res) => {
+    try {
+        const { title, author, genre } = req.body;
+
+        const book = await Book.findById(req.params.id);
+
+        if (!book) {
+            return res.status(404).json({
+                message: "Book not found"
+            });
+        }
+
+        // Normal user can update only their own book
+        if (
+            req.user.role !== "admin" &&
+            book.createdBy.toString() !== req.user.id.toString()
+        ) {
+            return res.status(403).json({
+                message: "You can only update your own books"
+            });
+        }
+
+        if (title !== undefined) book.title = title;
+        if (author !== undefined) book.author = author;
+        if (genre !== undefined) book.genre = genre;
+
+        await book.save();
+
+        res.status(200).json({
+            message: "Book updated successfully",
+            book
+        });
+
+    } catch (error) {
+        console.error("Update book error:", error);
+
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                message: "Invalid book ID"
+            });
+        }
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
 };
 
+
+const deleteBook = async (req, res) => {
+    try {
+        const book = await Book.findById(req.params.id);
+
+        if (!book) {
+            return res.status(404).json({
+                message: "Book not found"
+            });
+        }
+
+        // Normal user can delete only their own book
+        if (
+            req.user.role !== "admin" &&
+            book.createdBy.toString() !== req.user.id.toString()
+        ) {
+            return res.status(403).json({
+                message: "You can only delete your own books"
+            });
+        }
+
+        //Delete all reviews associated with the book
+        await Review.deleteMany({
+            book: req.params.id
+        });
+        
+        //Delete the book
+        await Book.findByIdAndDelete(req.params.id);
+
+        res.status(200).json({
+            message: "Book deleted successfully"
+        });
+
+    } catch (error) {
+        console.error("Delete book error:", error);
+
+        if (error.name === "CastError") {
+            return res.status(400).json({
+                message: "Invalid book ID"
+            });
+        }
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
+
+
+module.exports = {
+    getBooks, // Public route to get all books
+    createBook, // Protected route to create a new book (requires authentication)
+    getBookById, // Public route to get a book by ID
+    searchBooks, // Public route to search books by title or author
+    updateBook, // Protected route to update a book (requires authentication)
+    deleteBook // Protected route to delete a book (requires authentication)
+};

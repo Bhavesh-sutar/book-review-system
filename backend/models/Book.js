@@ -23,6 +23,13 @@ const bookSchema = new mongoose.Schema(
         averageRating: {
             type: Number,
             default: 0
+        },
+
+        // Reference to the user who created the book - Foreign key relationship with the User model
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true
         }
     },
     {

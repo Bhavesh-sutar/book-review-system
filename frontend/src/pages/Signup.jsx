@@ -7,7 +7,8 @@ function Signup() {
         username: "",
         email: "",
         mobile: "",
-        password: ""
+        password: "",
+        pincode: ""
     });
 
     const [error, setError] = useState("");
@@ -28,13 +29,23 @@ function Signup() {
         setError("");
         setSuccess("");
 
-        if (!form.username || !form.email || !form.mobile || !form.password) {
+        if (!form.username || !form.email || !form.mobile || !form.password || !form.pincode) {
             setError("All fields are required");
             return;
         }
 
         if (!/^\d{10}$/.test(form.mobile)) {
             setError("Mobile number must contain exactly 10 digits");
+            return;
+        }
+
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(form.email)) {
+            setError("Enter valid email");
+            return;
+        }
+
+        if (!/^\d{6}$/.test(form.pincode)) {
+            setError("Pincode must contain 6 digits number");
             return;
         }
 
@@ -95,6 +106,14 @@ function Signup() {
                         name="password"
                         placeholder="Password"
                         value={form.password}
+                        onChange={handleChange}
+                    />
+
+                    <input
+                        type="pincode"
+                        name="pincode"
+                        placeholder="Pincode"
+                        value={form.pincode}
                         onChange={handleChange}
                     />
 
