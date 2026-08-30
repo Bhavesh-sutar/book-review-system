@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
           type: String,
           required: true,
           trim: true,
-          limit: 6
+          match: /^\d{6}$/
         },
 
         role: {

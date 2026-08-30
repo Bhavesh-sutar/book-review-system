@@ -20,7 +20,7 @@ const signup = async (req, res) => {
         if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
             //setError("Invalid email");
             return res.status(400).json({
-              message: "Email dalna sikh ke aa"
+              message: "Email is not valid"
             });
         }
 
@@ -28,7 +28,7 @@ const signup = async (req, res) => {
         if (!/^\d{10}$/.test(mobile)) {
           //setError("Invalid Mobile Number");
           return res.status(400).json({
-              message: "Ladki h kya galat number deta h"
+              message: "Invalid Mobile Number"
           });
         }
 

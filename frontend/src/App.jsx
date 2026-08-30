@@ -40,7 +40,7 @@ function App() {
                 {/* Public */}
                 <Route
                     path="/"
-                    element={<Dashboard />}
+                    element={<Navigate to="/dashboard" replace />}
                 />
 
                 <Route

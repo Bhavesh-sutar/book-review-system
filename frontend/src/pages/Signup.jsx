@@ -8,7 +8,7 @@ function Signup() {
         email: "",
         mobile: "",
         password: "",
-        pincode: ""
+        pin: ""
     });
 
     const [error, setError] = useState("");
@@ -29,7 +29,7 @@ function Signup() {
         setError("");
         setSuccess("");
 
-        if (!form.username || !form.email || !form.mobile || !form.password || !form.pincode) {
+        if (!form.username || !form.email || !form.mobile || !form.password || !form.pin) {
             setError("All fields are required");
             return;
         }
@@ -44,8 +44,8 @@ function Signup() {
             return;
         }
 
-        if (!/^\d{6}$/.test(form.pincode)) {
-            setError("Pincode must contain 6 digits number");
+        if (!/^\d{6}$/.test(form.pin)) {
+            setError("Pin must contain 6 digits number");
             return;
         }
 
@@ -110,10 +110,10 @@ function Signup() {
                     />
 
                     <input
-                        type="pincode"
-                        name="pincode"
-                        placeholder="Pincode"
-                        value={form.pincode}
+                        type="pin"
+                        name="pin"
+                        placeholder="Pin"
+                        value={form.pin}
                         onChange={handleChange}
                     />
 
