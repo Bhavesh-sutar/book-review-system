@@ -18,6 +18,16 @@ function BookDetails() {
     const [reviewLoading, setReviewLoading] = useState(false);
     const [editingReview, setEditingReview] = useState(null);
 
+    // Edit book state for normal user
+    const [editingBook, setEditingBook] = useState(false);
+
+    const [editTitle, setEditTitle] = useState("");
+    const [editAuthor, setEditAuthor] = useState("");
+    const [editGenre, setEditGenre] = useState("");
+
+    const [bookEditError, setBookEditError] = useState("");
+    const [bookEditLoading, setBookEditLoading] = useState(false);
+
     const currentUser = JSON.parse(localStorage.getItem("user"));
 
     const loadBook = async () => {
@@ -74,6 +84,42 @@ function BookDetails() {
         }
     };
 
+    //update users owned book
+    const handleUpdateBook = async (e) => {
+        e.preventDefault();
+        setBookEditError("");
+
+        if (!editTitle.trim() || !editAuthor.trim() || !editGenre.trim()) {
+            setBookEditError(
+                "Title, author, and genre are required"
+            );
+            return;
+        }
+
+        try {
+            setBookEditLoading(true);
+
+            await api.put(`/books/${id}`, {
+                title: editTitle,
+                author: editAuthor,
+                genre: editGenre
+            });
+
+            setEditingBook(false);
+
+            await loadBook();
+
+        } catch (error) {
+            setBookEditError(
+                error.response?.data?.message ||
+                "Failed to update book"
+            );
+        } finally {
+            setBookEditLoading(false);
+        }
+    };
+
+    // updating the review
     const updateReview = async (e) => {
         e.preventDefault();
         setReviewError("");
@@ -147,6 +193,9 @@ function BookDetails() {
     if (!book) {
         return <p className="status">Book not found.</p>;
     }
+    
+    //Check Owner of the book, if current user is the owner, then allow edit and delete buttons for the book. Admin can also edit and delete any book.
+    const isOwner = currentUser?.id === book.createdBy?.toString();
 
     return (
         <div className="details-page">
@@ -167,7 +216,70 @@ function BookDetails() {
                 </p>
 
                 <h2>⭐ {book.averageRating || 0}</h2>
+
+                {isOwner && (
+                    <button
+                        onClick={() => {
+                            setEditingBook(true);
+                            setEditTitle(book.title);
+                            setEditAuthor(book.author);
+                            setEditGenre(book.genre);
+                            setBookEditError("");
+                        }}
+                    >
+                        Edit Book
+                    </button>
+                )}
             </section>
+
+            {editingBook && (
+                <section className="edit-book-section">
+                    <h2>Edit Book</h2>
+
+                
+                    <form onSubmit={handleUpdateBook}>
+                        <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            placeholder="Book title"
+                        />
+
+                        <input
+                            type="text"
+                            value={editAuthor}
+                            onChange={(e) => setEditAuthor(e.target.value)}
+                            placeholder="Author"
+                        />
+
+                        <input
+                            type="text"
+                            value={editGenre}
+                            onChange={(e) => setEditGenre(e.target.value)}
+                            placeholder="Genre"
+                        />
+
+                        {bookEditError && (
+                            
+                            <p className="error">{bookEditError}</p>
+                        )}
+
+                        <button type="submit">
+                            Update Book
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setEditingBook(false);
+                                setBookEditError("");
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </form>
+                </section>
+            )}
 
             <section className="review-section">
 

@@ -97,8 +97,9 @@ const getBookById = async (req, res) => {
             });
         }
 
+        // Get reviews for the book, sorted by creation date (newest first)
         const reviews = await Review.find({ book: book._id })
-            .populate("user", "username")
+            .populate("user", "username") //We want username in frontend, not the userId...
             .sort({ createdAt: -1 });
 
         res.status(200).json({
