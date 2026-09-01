@@ -26,16 +26,27 @@ function Dashboard() {
     const isLoggedIn = !!token;
     const isAdmin = currentUser?.role === "admin";
 
-    const loadBooks = async () => {
+    // CHANGED: loadBooks now accepts authorValue and pageValue as explicit
+    // parameters too (previously only searchValue was a parameter, and
+    // author/page were read from state). This avoids stale-closure bugs
+    // any time we need to fetch with values that haven't finished
+    // re-rendering into state yet (e.g. right after clearFilters or
+    // handleSearch call setX and then immediately call loadBooks).
+    const loadBooks = async (
+        searchValue = search,
+        authorValue = author,
+        genreValue = genre,
+        pageValue = page
+    ) => {
         try {
             setLoading(true);
             setError("");
 
             let response;
 
-            if (search.trim()) {
+            if (searchValue.trim()) {
                 response = await api.get(
-                    `/books/search?q=${encodeURIComponent(search)}`
+                    `/books/search?q=${encodeURIComponent(searchValue)}`
                 );
 
                 setBooks(response.data.books);
@@ -46,12 +57,12 @@ function Dashboard() {
                 });
             } else {
                 const params = new URLSearchParams({
-                    page,
+                    page: pageValue, // CHANGED: use pageValue param instead of state `page`
                     limit: 6
                 });
 
-                if (author) params.append("author", author);
-                if (genre) params.append("genre", genre);
+                if (authorValue) params.append("author", authorValue); // CHANGED: authorValue param
+                if (genreValue) params.append("genre", genreValue);   // CHANGED: genreValue param
 
                 response = await api.get(`/books?${params.toString()}`);
 
@@ -68,6 +79,8 @@ function Dashboard() {
         }
     };
 
+    // UNCHANGED: still handles page/author/genre changes (typing in the
+    // author/genre filter inputs, or clicking Previous/Next).
     useEffect(() => {
         loadBooks();
     }, [page, author, genre]);
@@ -75,7 +88,10 @@ function Dashboard() {
     const handleSearch = (e) => {
         e.preventDefault();
         setPage(1);
-        loadBooks();
+        // CHANGED: pass the values being submitted explicitly instead of
+        // relying on loadBooks() reading `search`/`page` from state
+        // (state wouldn't have updated yet at this point in the function).
+        loadBooks(search, author, genre, 1);
     };
 
     const clearFilters = () => {
@@ -83,6 +99,14 @@ function Dashboard() {
         setAuthor("");
         setGenre("");
         setPage(1);
+        // CHANGED (the actual bug fix): explicitly reload with the reset
+        // values right here, instead of waiting on the useEffect. This is
+        // necessary because if author/genre/page were already at their
+        // "empty"/default values, setting them again produces no change
+        // in the useEffect's dependency array, so the effect never
+        // re-fires and the old search results stayed on screen until a
+        // second Clear click coincidentally caused a re-fetch.
+        loadBooks("", "", "", 1);
     };
 
     const logout = () => {

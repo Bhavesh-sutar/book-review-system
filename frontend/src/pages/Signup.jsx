@@ -11,7 +11,7 @@ function Signup() {
         pin: ""
     });
 
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState({});
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -22,30 +22,61 @@ function Signup() {
             ...form,
             [e.target.name]: e.target.value
         });
+
+        // Clear error for the field being edited
+        setErrors({
+            ...errors,
+            [e.target.name]: ""
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
+
+        setErrors({});
         setSuccess("");
 
-        if (!form.username || !form.email || !form.mobile || !form.password || !form.pin) {
-            setError("All fields are required");
-            return;
+        const newErrors = {};
+
+        // Username validation
+        if (!form.username.trim()) {
+            newErrors.username = "Username is required";
         }
 
-        if (!/^\d{10}$/.test(form.mobile)) {
-            setError("Mobile number must contain exactly 10 digits");
-            return;
+        // Email validation
+        if (!form.email.trim()) {
+            newErrors.email = "Email is required";
+        } else if (
+            !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+                form.email
+            )
+        ) {
+            newErrors.email = "Enter a valid email";
         }
 
-        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(form.email)) {
-            setError("Enter valid email");
-            return;
+        // Mobile validation
+        if (!form.mobile.trim()) {
+            newErrors.mobile = "Mobile number is required";
+        } else if (!/^\d{10}$/.test(form.mobile)) {
+            newErrors.mobile =
+                "Mobile number must contain exactly 10 digits";
         }
 
-        if (!/^\d{6}$/.test(form.pin)) {
-            setError("Pin must contain 6 digits number");
+        // Password validation
+        if (!form.password) {
+            newErrors.password = "Password is required";
+        }
+
+        // PIN validation
+        if (!form.pin.trim()) {
+            newErrors.pin = "PIN is required";
+        } else if (!/^\d{6}$/.test(form.pin)) {
+            newErrors.pin = "PIN must contain exactly 6 digits";
+        }
+
+        // Show all validation errors
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
@@ -61,10 +92,11 @@ function Signup() {
             }, 800);
 
         } catch (error) {
-            setError(
-                error.response?.data?.message ||
-                "Signup failed"
-            );
+            setErrors({
+                server:
+                    error.response?.data?.message ||
+                    "Signup failed"
+            });
         } finally {
             setLoading(false);
         }
@@ -73,17 +105,26 @@ function Signup() {
     return (
         <div className="auth-container">
             <div className="auth-card">
+
                 <h1>Book Review System</h1>
                 <h2>Create Account</h2>
 
                 <form onSubmit={handleSubmit}>
+
                     <input
                         type="text"
                         name="username"
                         placeholder="Username"
+                        maxLength="20"
                         value={form.username}
                         onChange={handleChange}
                     />
+
+                    {errors.username && (
+                        <p className="error">
+                            {errors.username}
+                        </p>
+                    )}
 
                     <input
                         type="email"
@@ -93,13 +134,26 @@ function Signup() {
                         onChange={handleChange}
                     />
 
+                    {errors.email && (
+                        <p className="error">
+                            {errors.email}
+                        </p>
+                    )}
+
                     <input
                         type="text"
                         name="mobile"
                         placeholder="10-digit mobile number"
+                        maxLength="10"
                         value={form.mobile}
                         onChange={handleChange}
                     />
+
+                    {errors.mobile && (
+                        <p className="error">
+                            {errors.mobile}
+                        </p>
+                    )}
 
                     <input
                         type="password"
@@ -109,26 +163,54 @@ function Signup() {
                         onChange={handleChange}
                     />
 
+                    {errors.password && (
+                        <p className="error">
+                            {errors.password}
+                        </p>
+                    )}
+
                     <input
-                        type="pin"
+                        type="text"
                         name="pin"
                         placeholder="Pin"
+                        maxLength="6"
+                        inputMode="numeric"
                         value={form.pin}
                         onChange={handleChange}
                     />
 
-                    {error && <p className="error">{error}</p>}
-                    {success && <p className="success">{success}</p>}
+                    {errors.pin && (
+                        <p className="error">
+                            {errors.pin}
+                        </p>
+                    )}
 
-                    <button type="submit" disabled={loading}>
+                    {errors.server && (
+                        <p className="error">
+                            {errors.server}
+                        </p>
+                    )}
+
+                    {success && (
+                        <p className="success">
+                            {success}
+                        </p>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                    >
                         {loading ? "Creating..." : "Sign Up"}
                     </button>
+
                 </form>
 
                 <p>
                     Already have an account?{" "}
                     <Link to="/login">Login</Link>
                 </p>
+
             </div>
         </div>
     );
